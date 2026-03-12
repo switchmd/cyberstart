@@ -1,19 +1,16 @@
 import { useState } from "react";
-import type { DownloadState, FileName } from "@/types";
+import type { DownloadState } from "@/types";
 import { TIMINGS } from "@/constants";
 import { downloadFile } from "@/utils/download";
 
 export const useDownload = () => {
   const [state, setState] = useState<DownloadState>("idle");
-  const [selectedFile, setSelectedFile] = useState<FileName>("cyberstart.exe");
 
-  const startDownload = async (file?: FileName) => {
+  const startDownload = async () => {
     setState("downloading");
-    
-    const targetFile = file ?? selectedFile;
 
     try {
-      await downloadFile(targetFile);
+      await downloadFile();
       setState("completed");
       setTimeout(() => setState("idle"), TIMINGS.COMPLETED_RESET);
     } catch (error) {
@@ -22,10 +19,5 @@ export const useDownload = () => {
     }
   };
 
-  return { 
-    state, 
-    selectedFile, 
-    setSelectedFile, 
-    startDownload
-  };
+  return { state, startDownload };
 };

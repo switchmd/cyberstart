@@ -1,9 +1,4 @@
-import type { FileOption } from "@/types";
-
-export const FILE_OPTIONS: FileOption[] = [
-  { value: "cyberstart.exe", label: "기본" },
-  { value: "kollus.exe", label: "Kollus Agent 포함" },
-];
+export const DOWNLOAD_FILE = "cyberstart.exe" as const;
 
 export const COLORS = {
   yellow: '#facc15',

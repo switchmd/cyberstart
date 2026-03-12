@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { useDownload } from "@/hooks/useDownload";
 
 export default function App() {
-  const { state, selectedFile, setSelectedFile, startDownload } = useDownload();
+  const { state, startDownload } = useDownload();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
@@ -17,8 +17,6 @@ export default function App() {
         <Header />
         <DownloadCard
           state={state}
-          selectedFile={selectedFile}
-          onFileChange={setSelectedFile}
           onDownload={startDownload}
         />
         <Footer />

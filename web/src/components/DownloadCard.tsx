@@ -3,8 +3,6 @@ import { DownloadButton } from "./DownloadButton";
 
 export const DownloadCard = ({
   state,
-  selectedFile,
-  onFileChange,
   onDownload,
 }: DownloadCardProps) => {
   const hasMessage = state !== "idle";
@@ -25,8 +23,6 @@ export const DownloadCard = ({
       {/* 다운로드 버튼 */}
       <DownloadButton 
         state={state} 
-        selectedFile={selectedFile}
-        onFileChange={onFileChange}
         onDownload={onDownload}
       />
 

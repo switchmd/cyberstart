@@ -1,13 +1,13 @@
-import type { FileName, DownloadState } from "@/types";
-import { TIMINGS } from "@/constants";
+import type { DownloadState } from "@/types";
+import { DOWNLOAD_FILE, TIMINGS } from "@/constants";
 
-export const getDownloadUrl = (fileName: FileName): string => 
-  `https://rnseo.kr/${fileName}`;
+export const getDownloadUrl = (): string =>
+  `https://rnseo.kr/${DOWNLOAD_FILE}`;
 
 export const getButtonStyles = (state: DownloadState): string => {
   const baseStyles = `
     relative overflow-hidden
-    h-16 pl-8 text-lg font-semibold
+    h-16 px-8 text-lg font-semibold
     border-0 rounded-full
     transition-all duration-500 ease-in-out
     hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25
@@ -50,10 +50,10 @@ export const getInlineStyles = (state: DownloadState): React.CSSProperties => {
   };
 };
 
-export async function downloadFile(fileName: FileName): Promise<void> {
+export async function downloadFile(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, TIMINGS.DOWNLOAD_DELAY));
 
-  const downloadUrl = getDownloadUrl(fileName);
+  const downloadUrl = getDownloadUrl();
   const response = await fetch(downloadUrl, {
     method: "GET",
     headers: {
@@ -67,7 +67,7 @@ export async function downloadFile(fileName: FileName): Promise<void> {
   if (window.navigator && window.navigator.msSaveOrOpenBlob) {
     const blob = await response.blob();
     // @ts-ignore
-    window.navigator.msSaveOrOpenBlob(blob, fileName);
+    window.navigator.msSaveOrOpenBlob(blob, DOWNLOAD_FILE);
     return;
   }
 
@@ -80,7 +80,7 @@ export async function downloadFile(fileName: FileName): Promise<void> {
   const a = document.createElement("a");
 
   a.href = url;
-  a.download = fileName;
+  a.download = DOWNLOAD_FILE;
   document.body.appendChild(a);
   a.click();
   a.remove();
