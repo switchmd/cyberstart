@@ -84,13 +84,12 @@ type model struct {
 	steps      []stepState
 	stepCursor int
 
-	// Install phase
-	currentStep int
-	currentLog  *atomicString
-	spinner     spinner.Model
-	progress    progress.Model
-	doneCount   int
-	totalCount  int
+	// Install phase (parallel)
+	stepLogs   []*atomicString // per-step live log
+	spinner    spinner.Model
+	progress   progress.Model
+	doneCount  int
+	totalCount int
 }
 
 // ── Constructor ─────────────────────────────────────────────────────
@@ -131,12 +130,11 @@ func NewModel() model {
 	}
 
 	return model{
-		phase:      phasePreset,
-		presets:    presets,
-		steps:      steps,
-		spinner:    s,
-		progress:   p,
-		currentLog: &atomicString{},
+		phase:   phasePreset,
+		presets: presets,
+		steps:   steps,
+		spinner: s,
+		progress: p,
 	}
 }
 
@@ -292,24 +290,33 @@ func (m model) beginInstall() (model, tea.Cmd) {
 	}
 	m.doneCount = 0
 
-	m.currentStep = m.nextEnabled(-1)
-	if m.currentStep < 0 {
+	if m.totalCount == 0 {
 		m.phase = phaseDone
 		return m, nil
 	}
 
-	m.steps[m.currentStep].status = statusRunning
-	m.currentLog.Store("")
+	// Allocate per-step logs
+	m.stepLogs = make([]*atomicString, len(m.steps))
+	for i := range m.steps {
+		m.stepLogs[i] = &atomicString{}
+	}
 
-	return m, tea.Batch(
-		m.spinner.Tick,
-		m.runStep(m.currentStep),
-	)
+	// Launch ALL enabled steps in parallel
+	var cmds []tea.Cmd
+	cmds = append(cmds, m.spinner.Tick)
+	for i := range m.steps {
+		if m.steps[i].enabled {
+			m.steps[i].status = statusRunning
+			cmds = append(cmds, m.runStep(i))
+		}
+	}
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) runStep(idx int) tea.Cmd {
 	step := m.steps[idx].step
-	log := m.currentLog
+	log := m.stepLogs[idx]
 	return func() tea.Msg {
 		err := step.Run(func(msg string) { log.Store(msg) })
 		return installDoneMsg{index: idx, err: err}
@@ -329,28 +336,16 @@ func (m model) updateInstall(msg tea.Msg) (tea.Model, tea.Cmd) {
 		pct := float64(m.doneCount) / float64(m.totalCount)
 		pCmd := m.progress.SetPercent(pct)
 
-		next := m.nextEnabled(msg.index)
-		if next < 0 {
+		// All done?
+		if m.doneCount >= m.totalCount {
 			installer.CleanupTempDir()
 			m.phase = phaseDone
 			return m, pCmd
 		}
 
-		m.currentStep = next
-		m.steps[next].status = statusRunning
-		m.currentLog.Store("")
-		return m, tea.Batch(m.runStep(next), pCmd)
+		return m, pCmd
 	}
 	return m, nil
-}
-
-func (m model) nextEnabled(after int) int {
-	for i := after + 1; i < len(m.steps); i++ {
-		if m.steps[i].enabled {
-			return i
-		}
-	}
-	return -1
 }
 
 // ── Done Phase ──────────────────────────────────────────────────────
@@ -530,13 +525,27 @@ func (m model) viewSteps(b *strings.Builder) {
 // ── Install view ────────────────────────────────────────────────────
 
 func (m model) viewInstall(b *strings.Builder) {
-	b.WriteString("  " + sectionStyle.Render("프로그램을 설치하고 있습니다..."))
+	running := 0
+	for _, s := range m.enabledList() {
+		if s.status == statusRunning {
+			running++
+		}
+	}
+
+	title := fmt.Sprintf("프로그램을 설치하고 있습니다... (%d개 병렬)", running)
+	if running == 0 {
+		title = "프로그램 설치를 마무리하고 있습니다..."
+	}
+	b.WriteString("  " + sectionStyle.Render(title))
 	b.WriteString("\n\n")
 
 	var c strings.Builder
-	list := m.enabledList()
 
-	for i, s := range list {
+	for i, s := range m.steps {
+		if !s.enabled {
+			continue
+		}
+
 		var icon string
 		var st lipgloss.Style
 
@@ -556,24 +565,25 @@ func (m model) viewInstall(b *strings.Builder) {
 		}
 
 		c.WriteString("  " + icon + " " + st.Render(s.step.Name))
+
+		// Show per-step log for running steps
+		if s.status == statusRunning && m.stepLogs != nil && i < len(m.stepLogs) {
+			if log := m.stepLogs[i].Load(); log != "" {
+				c.WriteString("  " + logStyle.Render(log))
+			}
+		}
+
 		if s.status == statusFailed && s.errMsg != "" {
 			c.WriteString("\n    " + dimStyle.Render(s.errMsg))
 		}
-		if i < len(list)-1 {
-			c.WriteString("\n")
-		}
+
+		c.WriteString("\n")
 	}
 
 	// Animated gradient progress bar + counter
 	counter := dimStyle.Render(fmt.Sprintf("  %d / %d", m.doneCount, m.totalCount))
-	c.WriteString("\n\n")
+	c.WriteString("\n")
 	c.WriteString("  " + m.progress.View() + counter)
-
-	// Current log message
-	if log := m.currentLog.Load(); log != "" {
-		c.WriteString("\n\n")
-		c.WriteString("  " + logStyle.Render(log))
-	}
 
 	card := cardStyle.
 		Width(m.outerWidth()).
