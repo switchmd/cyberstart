@@ -15,10 +15,7 @@ export default function App() {
 
       <div className="relative z-10 text-center mx-auto">
         <Header />
-        <DownloadCard
-          state={state}
-          onDownload={startDownload}
-        />
+        <DownloadCard state={state} onDownload={startDownload} />
         <Footer />
       </div>
     </div>

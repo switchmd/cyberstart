@@ -1,8 +1,7 @@
 import type { DownloadState } from "@/types";
 import { DOWNLOAD_FILE, TIMINGS } from "@/constants";
 
-export const getDownloadUrl = (): string =>
-  `https://rnseo.kr/${DOWNLOAD_FILE}`;
+export const getDownloadUrl = (): string => `https://rnseo.kr/${DOWNLOAD_FILE}`;
 
 export const getButtonStyles = (state: DownloadState): string => {
   const baseStyles = `
@@ -25,8 +24,9 @@ export const getButtonStyles = (state: DownloadState): string => {
 };
 
 export const getGlowStyles = (state: DownloadState): string => {
-  const baseGlowClass = "absolute inset-0 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-all duration-500 ease-in-out -z-10";
-  
+  const baseGlowClass =
+    "absolute inset-0 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-all duration-500 ease-in-out -z-10";
+
   const glowColors = {
     idle: "bg-purple-600",
     downloading: "bg-purple-600",
@@ -39,10 +39,10 @@ export const getGlowStyles = (state: DownloadState): string => {
 
 export const getInlineStyles = (state: DownloadState): React.CSSProperties => {
   const gradients = {
-    idle: 'linear-gradient(to right, #9333ea, #db2777)',
-    downloading: 'linear-gradient(to right, #9333ea, #db2777)',
-    completed: 'linear-gradient(to right, #059669, #047857)',
-    error: 'linear-gradient(to right, #dc2626, #ea580c)',
+    idle: "linear-gradient(to right, #9333ea, #db2777)",
+    downloading: "linear-gradient(to right, #9333ea, #db2777)",
+    completed: "linear-gradient(to right, #059669, #047857)",
+    error: "linear-gradient(to right, #dc2626, #ea580c)",
   };
 
   return {

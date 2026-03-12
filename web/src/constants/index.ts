@@ -1,8 +1,8 @@
 export const DOWNLOAD_FILE = "cyberstart.exe" as const;
 
 export const COLORS = {
-  yellow: '#facc15',
-  white: '#ffffff',
+  yellow: "#facc15",
+  white: "#ffffff",
 } as const;
 
 export const TIMINGS = {

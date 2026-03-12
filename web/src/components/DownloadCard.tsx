@@ -1,10 +1,7 @@
 import type { DownloadCardProps } from "@/types";
 import { DownloadButton } from "./DownloadButton";
 
-export const DownloadCard = ({
-  state,
-  onDownload,
-}: DownloadCardProps) => {
+export const DownloadCard = ({ state, onDownload }: DownloadCardProps) => {
   const hasMessage = state !== "idle";
 
   return (
@@ -21,10 +18,7 @@ export const DownloadCard = ({
       </div>
 
       {/* 다운로드 버튼 */}
-      <DownloadButton 
-        state={state} 
-        onDownload={onDownload}
-      />
+      <DownloadButton state={state} onDownload={onDownload} />
 
       {/* 상태별 추가 메시지 */}
       <div

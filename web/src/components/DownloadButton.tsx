@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import type { DownloadButtonProps } from "@/types";
 import { COLORS } from "@/constants";
-import { getButtonStyles, getGlowStyles, getInlineStyles } from "@/utils/download";
+import {
+  getButtonStyles,
+  getGlowStyles,
+  getInlineStyles,
+} from "@/utils/download";
 import { getButtonContent } from "./ButtonContent";
 
-export const DownloadButton = ({
-  state,
-  onDownload,
-}: DownloadButtonProps) => {
+export const DownloadButton = ({ state, onDownload }: DownloadButtonProps) => {
   const { icon, text } = getButtonContent(state);
 
   return (
@@ -23,7 +24,10 @@ export const DownloadButton = ({
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
           {/* 버튼 내용 */}
-          <div className="relative flex items-center gap-3 font-light" style={{ color: COLORS.white }}>
+          <div
+            className="relative flex items-center gap-3 font-light"
+            style={{ color: COLORS.white }}
+          >
             <div className="transition-all duration-300 ease-in-out">
               {icon}
             </div>
